@@ -214,6 +214,25 @@ func translateTypesDeps(pkg *packages.Package, filter declfilter.DeclFilter) []t
 		return append(deps, anonDeps(pkg.TypesInfo.TypeOf(s.Type))...)
 	}
 
+	// A type with no generated declarations (`type NewTypeName
+	// UnderlyingType` emits none: its proofs are those of UnderlyingType)
+	// still stands for the types it depends on, so that a chunk using it
+	// imports their chunks (leanChunks). noDecls maps such a type to those
+	// types; the topological order fills it in before any type that depends
+	// on it.
+	noDecls := make(map[string][]string)
+	throughNoDecls := func(deps []string) []string {
+		var out []string
+		for _, d := range deps {
+			if ds, ok := noDecls[d]; ok {
+				out = append(out, ds...)
+			} else {
+				out = append(out, d)
+			}
+		}
+		return out
+	}
+
 	for t := range toposort.ToposortSeq(slices.Values(tr.specs),
 		func(s *ast.TypeSpec) iter.Seq[*ast.TypeSpec] {
 			return func(yield func(s *ast.TypeSpec) bool) {
@@ -243,8 +262,13 @@ func translateTypesDeps(pkg *packages.Package, filter declfilter.DeclFilter) []t
 				emitAnon(dep)
 			}
 		}
-		for _, d := range tr.translateType(t) {
-			decls = append(decls, translatedType{decl: d, name: t.Name.Name, deps: depsOf(t)})
+		ds := tr.translateType(t)
+		deps := throughNoDecls(depsOf(t))
+		if len(ds) == 0 {
+			noDecls[t.Name.Name] = deps
+		}
+		for _, d := range ds {
+			decls = append(decls, translatedType{decl: d, name: t.Name.Name, deps: deps})
 		}
 	}
 	for _, a := range anons {
