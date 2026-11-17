@@ -1169,3 +1169,31 @@ same fact, as in the integer case.
 **Why.** The user approved extending the rule to string underlying types (2026-11-17, relayed by
 etcd-grove-03), so that method-less named string types (`types.UID`) format as Go formats them; a
 type with a formatting method stays arbitrary (the model calls no methods).
+
+## Case 37 — ACCEPTED: `==` on arrays (branch `array-eq`)
+
+**Symptom.** Incomplete. `GoOp GoEquals (go.ArrayType n t)` had no rule (`equals_array` is only
+`CheckComparable`), so `==` and `!=` on arrays were stuck, and so were map lookups with array
+keys (Case 15 compares keys with `=⟨key_type⟩`) and interface `==` whose dynamic type is an
+array (`go_eq_interface` delegates to the dynamic type's `==`).
+
+**Witness.** `a := [3]uint64{1, 2, 3}; b := [3]uint64{1, 2, 3}; return a == b` is true in Go and
+stuck in the model.
+
+**Taken.** One rule in `ArraySemantics`, a sibling of `go_eq_struct`: the elements compared in
+index order with `Index` (as `store_array` reads them), stopping at the first difference, as the
+Go spec says. Cost: 1 semantics rule (10 lines), 0 goose changes, 3 semantics tests
+(`testArrayEqual`; `testArrayEqualNested`, with arrays in structs, structs in arrays and a named
+array type; `testArrayMapKey`). The first two are proved (`semantics_auto`, and for the nested
+one an unfolding of the comparisons of `[2]arrayInStruct`); the map test runs in Go only, as
+the map specs have no `SafeMapKey` instance for array keys. Proof side, not trusted:
+`pure_wp_eq_array` in `Theory/Array.lean`, `a == b` as one `wp_auto` step to `decide (a = b)`
+when the element type's underlying type is strictly comparable and both values have the
+array's length (the side condition, as `GoArray V n` does not enforce it).
+
+**Not taken.** `IsStrictlyComparable (go.ArrayType n t) (GoArray V n)` for strictly comparable
+`t`: a second rule for the same instruction, not the scheme of `go_eq_struct`, and wrong for
+arrays of floats or interfaces.
+
+**Why.** The user approved the plan as proposed (2026-11-17): one rule completing the scheme of
+`go_eq_struct` (shape of Case 1), with the `decide` lemma for proofs.

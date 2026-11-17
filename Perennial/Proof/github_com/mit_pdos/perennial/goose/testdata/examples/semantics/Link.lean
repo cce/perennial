@@ -18,6 +18,8 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructNested
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructPointer
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructSameType
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testArrayEqual
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testArrayEqualNested
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testByteSliceToString
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCatchTwoDeep
@@ -134,6 +136,12 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testA
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testAnonStructSameType : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructSameType.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testAnonStructSameType.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testArrayEqual : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testArrayEqual.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testArrayEqual.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testArrayEqualNested : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testArrayEqualNested.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testArrayEqualNested.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testBreakSwitch : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakSwitch.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakSwitch.wp_proof

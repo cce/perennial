@@ -26,6 +26,16 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
   equals_array (n : Int) (t : go.GoType) [H : ⟦CheckComparable t, #()⟧ ⤳[under] #()] :
     ⟦CheckComparable (go.ArrayType n t), #()⟧ ⤳[under] #()
 
+  go_eq_array (n : Int) (elem_type : go.GoType) (v1 v2 : val) :
+    ⟦GoOp GoEquals (go.ArrayType n elem_type), (v1, v2)⟧ ⤳[under]
+    (List.foldl (fun cmp_so_far (j : Int) =>
+        gl(if: cmp_so_far then
+             Index (go.ArrayType n elem_type) (v1, #(W64 j)) =⟨elem_type⟩
+             Index (go.ArrayType n elem_type) (v2, #(W64 j))
+           else #false))
+      (#true : Expr)
+      ((List.range n.toNat).map (fun (i : Nat) => (i : Int))))
+
   type_repr_array (ty : go.GoType) (V : Type) (n : Int) [ZeroVal V] [TypeRepr ty V] :
     go.TypeReprUnderlying (go.ArrayType n ty) (GoArray V n)
 
@@ -171,13 +181,13 @@ class ArraySemantics [GoSemanticsFunctions] : Prop where
     go.IntoValInj (GoArray V n)
 
 attribute [instance] ArraySemantics.array_set_step ArraySemantics.array_length_step
-  ArraySemantics.equals_array ArraySemantics.type_repr_array ArraySemantics.alloc_array
+  ArraySemantics.equals_array ArraySemantics.go_eq_array ArraySemantics.type_repr_array ArraySemantics.alloc_array
   ArraySemantics.load_array ArraySemantics.store_array ArraySemantics.index_ref_array
   ArraySemantics.index_array ArraySemantics.len_array ArraySemantics.cap_array
   ArraySemantics.composite_literal_array
   ArraySemantics.slice_array_step ArraySemantics.fullSlice_array_step_pure
   ArraySemantics.intoVal_inj_array
-export ArraySemantics (array_set_step array_length_step equals_array type_repr_array alloc_array
+export ArraySemantics (array_set_step array_length_step equals_array go_eq_array type_repr_array alloc_array
   load_array store_array index_ref_array index_array len_array cap_array composite_literal_array
   slice_array_step
   fullSlice_array_step_pure arrayIndexRef_null_inv arrayIndexRef_add

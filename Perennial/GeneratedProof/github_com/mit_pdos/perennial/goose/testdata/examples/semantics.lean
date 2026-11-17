@@ -277,6 +277,63 @@ noncomputable instance pair_access_store_b (l : Loc) (v : github_com.mit_pdos.pe
 end def_
 end pair
 
+namespace arrayInStruct
+section def_
+
+variable [GooseExts] [GooseSemantics] [GooseInterp] [go_gctx : GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [hG : HeapGS hlc GF]
+variable [sem : go.Semantics]
+variable [package_sem' : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.Assumptions]
+
+noncomputable instance arrayInStruct_typed_pointsto :
+    TypedPointsto (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct where
+  typedPointstoDef l v dq := iprop(
+    "arr" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct go!"arr" l) v.arr' dq ∗
+    "x" ∷ typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct go!"x" l) v.x' dq ∗
+    "_" ∷ True)
+  typedPointstoDef_dfractional := by solve_typed_pointsto_dfractional
+  typedPointstoDef_timeless := by solve_typed_pointsto_timeless
+  typedPointsto_agree := by solve_typed_pointsto_agree
+
+noncomputable instance arrayInStruct_into_val_typed :
+    IntoValTypedUnderlying (GF := GF) github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct.underlying := by
+  solve_into_val_typed_struct
+
+noncomputable instance arrayInStruct_access_load_arr (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct go!"arr" l) v.arr' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct go!"arr" l) v.arr' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance arrayInStruct_access_store_arr (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct) (arr' : (GoArray w64 2)) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct go!"arr" l) v.arr' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct go!"arr" l) arr' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with arr' := arr' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance arrayInStruct_access_load_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct) (dq : DFrac) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct go!"x" l) v.x' dq)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct go!"x" l) v.x' dq)
+      (typedPointsto l v dq) (typedPointsto l v dq) :=
+ by
+  solve_pointsto_access_struct
+
+noncomputable instance arrayInStruct_access_store_x (l : Loc) (v : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct) (x' : w64) :
+    AccessStrict (PROP := IProp GF)
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct go!"x" l) v.x' (DFrac.own 1))
+      (typedPointsto (structFieldRef github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct go!"x" l) x' (DFrac.own 1))
+      (typedPointsto l v (DFrac.own 1)) (typedPointsto l ({ v with x' := x' } : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.arrayInStruct) (DFrac.own 1)) :=
+ by
+  solve_pointsto_access_struct
+
+end def_
+end arrayInStruct
+
 namespace blankFieldStruct
 section def_
 

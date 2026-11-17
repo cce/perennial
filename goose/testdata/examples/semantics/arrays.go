@@ -115,3 +115,41 @@ func testSliceArrayPointer() bool {
 	t := p[:2:3]
 	return len(s) == 2 && cap(s) == 2 && a[1] == 5 && len(t) == 2 && cap(t) == 3 && t[1] == 5
 }
+
+// == on arrays compares the elements
+func testArrayEqual() bool {
+	a := [3]uint64{1, 2, 3}
+	b := [3]uint64{1, 2, 3}
+	c := [3]uint64{1, 5, 3}
+	return a == b && a != c && !(c == b)
+}
+
+type arrayInStruct struct {
+	arr [2]uint64
+	x   uint64
+}
+
+type byteArray [2]byte
+
+// == on arrays inside structs, structs inside arrays, and a named array type
+func testArrayEqualNested() bool {
+	s1 := arrayInStruct{arr: [2]uint64{1, 2}, x: 3}
+	s2 := arrayInStruct{arr: [2]uint64{1, 2}, x: 3}
+	s3 := arrayInStruct{arr: [2]uint64{1, 4}, x: 3}
+	ss1 := [2]arrayInStruct{s1, s3}
+	ss2 := [2]arrayInStruct{s2, s3}
+	b1 := byteArray{7, 8}
+	b2 := byteArray{7, 8}
+	b3 := byteArray{7, 9}
+	return s1 == s2 && s1 != s3 && ss1 == ss2 && b1 == b2 && b1 != b3
+}
+
+// a map with array keys finds a key equal to the one stored
+func testArrayMapKey() bool {
+	m := make(map[[2]uint64]uint64)
+	m[[2]uint64{1, 2}] = 3
+	k := [2]uint64{1, 2}
+	v, ok := m[k]
+	_, ok2 := m[[2]uint64{2, 1}]
+	return ok && v == 3 && !ok2
+}

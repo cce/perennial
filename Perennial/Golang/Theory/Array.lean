@@ -556,6 +556,99 @@ instance pure_wp_array_cap {st : go.GoType} {n : Int} {elem : go.GoType}
 
 end lenCap
 
+/-! ## `==` on arrays -/
+
+section eq
+variable [GooseExts] [GooseSemantics] [GooseInterp]
+variable [GoGlobalContext]
+variable {hlc : HasLC} {GF : BundledGFunctors} [G : GooseGlobalGS hlc GF] [L : GooseLocalGS GF]
+variable [GoSemanticsFunctions] [go.PreSemantics]
+variable {V : Type} [DecidableEq V]
+
+/-- One step of the element comparisons of `go.go_eq_array`. -/
+abbrev eqArrayStep (n : Int) (elem_type : go.GoType) (v1 v2 : val) (cmp_so_far : Expr) (j : Int) :
+    Expr :=
+  gl(if: cmp_so_far then
+       Index (go.ArrayType n elem_type) (v1, #(W64 j)) =⟨elem_type⟩
+       Index (go.ArrayType n elem_type) (v2, #(W64 j))
+     else #false)
+
+theorem take_succ_eq_iff {A : Type} (l1 l2 : List A) (k : Nat) (x y : A)
+    (hx : l1[k]? = some x) (hy : l2[k]? = some y) :
+    l1.take (k + 1) = l2.take (k + 1) ↔ l1.take k = l2.take k ∧ x = y := by
+  rw [List.take_add_one, List.take_add_one, hx, hy]
+  simp only [Option.toList_some]
+  constructor
+  · intro h
+    have hl : (l1.take k).length = (l2.take k).length := by
+      have h1 := congrArg List.length h
+      simp only [List.length_append, List.length_singleton] at h1
+      omega
+    obtain ⟨h1, h2⟩ := List.append_inj h hl
+    exact ⟨h1, by simpa using h2⟩
+  · rintro ⟨h1, rfl⟩
+    rw [h1]
+
+theorem wp_eq_array_loop (elem_type : go.GoType) {elem_u : go.GoType} [elem_type ↓u elem_u]
+    [go.IsStrictlyComparable elem_u V] (n : Int)
+    {s : Stuckness} {E : CoPset} (a b : GoArray V n)
+    (ha : (a.arr.length : Int) = n) (hb : (b.arr.length : Int) = n) (hn : n < 2^63)
+    (k : Nat) (hk : (k : Int) ≤ n) :
+    ⊢ ∀ Φ : val → IProp GF, Φ #(decide (a.arr.take k = b.arr.take k)) -∗
+      WP (List.foldl (eqArrayStep n elem_type #a #b) (#true : Expr)
+        ((List.range k).map (fun (i : Nat) => (i : Int)))) @ s; E {{ Φ }} := by
+  induction k with
+  | zero =>
+    iintro %Φ HΦ
+    simp only [List.range_zero, List.map_nil, List.foldl_nil, List.take_zero, decide_true]
+    wp_pures
+    iexact HΦ
+  | succ k ih =>
+    iintro %Φ HΦ
+    simp only [List.range_succ, List.map_append, List.map_cons, List.map_nil, List.foldl_append,
+      List.foldl_cons, List.foldl_nil]
+    wp_apply_core ih (by omega)
+    obtain ⟨x, hx⟩ : ∃ x, a.arr[k]? = some x :=
+      ⟨a.arr[k]'(by omega), List.getElem?_eq_getElem (by omega)⟩
+    obtain ⟨y, hy⟩ : ∃ y, b.arr[k]? = some y :=
+      ⟨b.arr[k]'(by omega), List.getElem?_eq_getElem (by omega)⟩
+    have hk' : sint.Z (W64 (k : Int)) = (k : Int) := by word
+    have hk'' : sint.nat (W64 (k : Int)) = k := by word
+    have hk0 : (0 ≤ (k : Int)) = True := eq_true (by omega)
+    simp only [take_succ_eq_iff a.arr b.arr k x y hx hy]
+    by_cases htk : a.arr.take k = b.arr.take k
+    · simp only [htk, decide_true, true_and]
+      wp_pures
+      simp only [hk', hk0, ↓reduceIte, hk'', hx]
+      wp_pures
+      simp only [hk', hk0, ↓reduceIte, hk'', hy]
+      wp_pures
+      iexact HΦ
+    · simp only [htk, _root_.false_and, decide_false]
+      wp_pures
+      iexact HΦ
+
+/-- `a == b` on arrays whose element type's underlying type has a strict `==`
+is `decide (a = b)`, given that `a` and `b` have the length of the array type,
+as every Go value of the type has. -/
+instance (priority := high) pure_wp_eq_array {t : go.GoType} {n : Int} {elem_type elem_u : go.GoType}
+    [t ↓u go.ArrayType n elem_type] [elem_type ↓u elem_u] [go.IsStrictlyComparable elem_u V]
+    (a b : GoArray V n) :
+    PureWp (G := G) (L := L) ((a.arr.length : Int) = n ∧ (b.arr.length : Int) = n ∧ n < 2^63)
+      (App (Val (GoInstruction (GoOp GoEquals t))) (Val (PairV #a #b))) (Val #(decide (a = b))) :=
+  pure_wp_val _ _ _ fun s E Φ ⟨ha, hb, hn⟩ => by
+    iintro HΦ
+    wp_pure_lc Hlc
+    have hdec : decide (a.arr.take n.toNat = b.arr.take n.toNat) = decide (a = b) := by
+      rw [List.take_of_length_le (by omega), List.take_of_length_le (by omega)]
+      cases a; cases b
+      simp only [GoArray.mk.injEq]
+    iapply wp_eq_array_loop elem_type n a b ha hb hn n.toNat (by omega)
+    rw [hdec]
+    iapply HΦ $$ Hlc
+
+end eq
+
 /-! ## Range loops over arrays
 
 Applying `array.forRangeIndex`, `array.forRange` and `array.forRangePtr` unfolds

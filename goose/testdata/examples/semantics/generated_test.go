@@ -79,6 +79,18 @@ func (suite *GoTestSuite) TestSliceArrayPointer() {
 	suite.Equal(true, testSliceArrayPointer())
 }
 
+func (suite *GoTestSuite) TestArrayEqual() {
+	suite.Equal(true, testArrayEqual())
+}
+
+func (suite *GoTestSuite) TestArrayEqualNested() {
+	suite.Equal(true, testArrayEqualNested())
+}
+
+func (suite *GoTestSuite) TestArrayMapKey() {
+	suite.Equal(true, testArrayMapKey())
+}
+
 func (suite *GoTestSuite) TestBlankFieldEq() {
 	suite.Equal(true, testBlankFieldEq())
 }

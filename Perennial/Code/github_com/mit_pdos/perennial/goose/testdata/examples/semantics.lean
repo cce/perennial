@@ -49,6 +49,16 @@ noncomputable def pairs.ty [GooseExts] [GoGlobalContext] : go.GoType :=
 
 attribute [irreducible] pairs.ty
 
+noncomputable def arrayInStruct.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.arrayInStruct" [])
+
+attribute [irreducible] arrayInStruct.ty
+
+noncomputable def byteArray.ty [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.byteArray" [])
+
+attribute [irreducible] byteArray.ty
+
 noncomputable def blankFieldStruct.ty [GooseExts] [GoGlobalContext] : go.GoType :=
   (go.GoType.Named go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.blankFieldStruct" [])
 
@@ -529,6 +539,15 @@ noncomputable def testRangeArrayLit [GooseExts] [GoGlobalContext] : GoString :=
 
 noncomputable def testSliceArrayPointer [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testSliceArrayPointer"
+
+noncomputable def testArrayEqual [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testArrayEqual"
+
+noncomputable def testArrayEqualNested [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testArrayEqualNested"
+
+noncomputable def testArrayMapKey [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testArrayMapKey"
 
 noncomputable def testBlankFieldEq [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testBlankFieldEq"
@@ -2128,6 +2147,182 @@ noncomputable def testSliceArrayPointer.impl [GooseExts] [GoGlobalContext] : val
   (App (Val (GoInstruction (GoStore (go.GoType.SliceType go.uint64)))) (Pair (Var "s") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore (go.GoType.PointerType (go.GoType.ArrayType 3 go.uint64))))) (Pair (Var "p") (Var "$r0")))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- == on arrays compares the elements
+
+    go: arrays.go:120:6 -/
+noncomputable def testArrayEqual.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 2))
+  (Let "$v2" (Val #(W64 3))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 3 go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v2")))])))))
+  (Let "a" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 3 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 3 go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 2))
+  (Let "$v2" (Val #(W64 3))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 3 go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v2")))])))))
+  (Let "b" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 3 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 3 go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 5))
+  (Let "$v2" (Val #(W64 3))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 3 go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v2")))])))))
+  (Let "c" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 3 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 3 go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (App (Val (GoInstruction (GoOp GoEquals (go.GoType.ArrayType 3 go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 3 go.uint64)))) (Var "a")) (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 3 go.uint64)))) (Var "b")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.ArrayType 3 go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 3 go.uint64)))) (Var "a")) (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 3 go.uint64)))) (Var "c"))))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.ArrayType 3 go.uint64)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 3 go.uint64)))) (Var "c")) (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 3 go.uint64)))) (Var "b"))))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 3 go.uint64)))) (Pair (Var "c") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 3 go.uint64)))) (Pair (Var "b") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 3 go.uint64)))) (Pair (Var "a") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- == on arrays inside structs, structs inside arrays, and a named array type
+
+    go: arrays.go:135:6 -/
+noncomputable def testArrayEqualNested.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (Let "$v0" (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 2 go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1")))]))))
+  (Let "$v1" (Val #(W64 3))
+  (App (Val (GoInstruction (CompositeLiteral arrayInStruct.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"arr")) (ElementExpression (go.GoType.ArrayType 2 go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (Let "s1" (App (Val (GoInstruction (GoAlloc arrayInStruct.ty))) (App (Val (GoInstruction (GoZeroVal arrayInStruct.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 2 go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1")))]))))
+  (Let "$v1" (Val #(W64 3))
+  (App (Val (GoInstruction (CompositeLiteral arrayInStruct.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"arr")) (ElementExpression (go.GoType.ArrayType 2 go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (Let "s2" (App (Val (GoInstruction (GoAlloc arrayInStruct.ty))) (App (Val (GoInstruction (GoZeroVal arrayInStruct.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 4))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 2 go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1")))]))))
+  (Let "$v1" (Val #(W64 3))
+  (App (Val (GoInstruction (CompositeLiteral arrayInStruct.ty))) (LiteralValue [(KeyedElement (some (KeyField go!"arr")) (ElementExpression (go.GoType.ArrayType 2 go.uint64) (Var "$v0"))), (KeyedElement (some (KeyField go!"x")) (ElementExpression go.uint64 (Var "$v1")))]))))
+  (Let "s3" (App (Val (GoInstruction (GoAlloc arrayInStruct.ty))) (App (Val (GoInstruction (GoZeroVal arrayInStruct.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad arrayInStruct.ty))) (Var "s1"))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad arrayInStruct.ty))) (Var "s3"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 2 arrayInStruct.ty)))) (LiteralValue [(KeyedElement none (ElementExpression arrayInStruct.ty (Var "$v0"))), (KeyedElement none (ElementExpression arrayInStruct.ty (Var "$v1")))]))))
+  (Let "ss1" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 2 arrayInStruct.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 2 arrayInStruct.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (App (Val (GoInstruction (GoLoad arrayInStruct.ty))) (Var "s2"))
+  (Let "$v1" (App (Val (GoInstruction (GoLoad arrayInStruct.ty))) (Var "s3"))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 2 arrayInStruct.ty)))) (LiteralValue [(KeyedElement none (ElementExpression arrayInStruct.ty (Var "$v0"))), (KeyedElement none (ElementExpression arrayInStruct.ty (Var "$v1")))]))))
+  (Let "ss2" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 2 arrayInStruct.ty)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 2 arrayInStruct.ty)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W8 7))
+  (Let "$v1" (Val #(W8 8))
+  (App (Val (GoInstruction (CompositeLiteral byteArray.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1")))]))))
+  (Let "b1" (App (Val (GoInstruction (GoAlloc byteArray.ty))) (App (Val (GoInstruction (GoZeroVal byteArray.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W8 7))
+  (Let "$v1" (Val #(W8 8))
+  (App (Val (GoInstruction (CompositeLiteral byteArray.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1")))]))))
+  (Let "b2" (App (Val (GoInstruction (GoAlloc byteArray.ty))) (App (Val (GoInstruction (GoZeroVal byteArray.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W8 7))
+  (Let "$v1" (Val #(W8 9))
+  (App (Val (GoInstruction (CompositeLiteral byteArray.ty))) (LiteralValue [(KeyedElement none (ElementExpression go.byte (Var "$v0"))), (KeyedElement none (ElementExpression go.byte (Var "$v1")))]))))
+  (Let "b3" (App (Val (GoInstruction (GoAlloc byteArray.ty))) (App (Val (GoInstruction (GoZeroVal byteArray.ty))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (If (If (App (Val (GoInstruction (GoOp GoEquals arrayInStruct.ty))) (Pair (App (Val (GoInstruction (GoLoad arrayInStruct.ty))) (Var "s1")) (App (Val (GoInstruction (GoLoad arrayInStruct.ty))) (Var "s2")))) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals arrayInStruct.ty))) (Pair (App (Val (GoInstruction (GoLoad arrayInStruct.ty))) (Var "s1")) (App (Val (GoInstruction (GoLoad arrayInStruct.ty))) (Var "s3"))))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals (go.GoType.ArrayType 2 arrayInStruct.ty)))) (Pair (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 2 arrayInStruct.ty)))) (Var "ss1")) (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 2 arrayInStruct.ty)))) (Var "ss2")))) (Val #false)) (App (Val (GoInstruction (GoOp GoEquals byteArray.ty))) (Pair (App (Val (GoInstruction (GoLoad byteArray.ty))) (Var "b1")) (App (Val (GoInstruction (GoLoad byteArray.ty))) (Var "b2")))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoOp GoEquals byteArray.ty))) (Pair (App (Val (GoInstruction (GoLoad byteArray.ty))) (Var "b1")) (App (Val (GoInstruction (GoLoad byteArray.ty))) (Var "b3"))))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore byteArray.ty))) (Pair (Var "b3") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore byteArray.ty))) (Pair (Var "b2") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore byteArray.ty))) (Pair (Var "b1") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 2 arrayInStruct.ty)))) (Pair (Var "ss2") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 2 arrayInStruct.ty)))) (Pair (Var "ss1") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore arrayInStruct.ty))) (Pair (Var "s3") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore arrayInStruct.ty))) (Pair (Var "s2") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore arrayInStruct.ty))) (Pair (Var "s1") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- a map with array keys finds a key equal to the one stored
+
+    go: arrays.go:148:6 -/
+noncomputable def testArrayMapKey.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "$r0" (App (App (Val (GoInstruction (FuncResolve go.make1 [(go.GoType.MapType (go.GoType.ArrayType 2 go.uint64) go.uint64)]))) (Val #())) (Val #()))
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType (go.GoType.ArrayType 2 go.uint64) go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType (go.GoType.ArrayType 2 go.uint64) go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Val #(W64 3))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 2 go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1")))]))))
+  (Let "k" (App (Val (GoInstruction (GoAlloc (go.GoType.ArrayType 2 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.ArrayType 2 go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (App (Val (map.lookup2 (go.GoType.ArrayType 2 go.uint64) go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType (go.GoType.ArrayType 2 go.uint64) go.uint64)))) (Var "m"))) (App (Val (GoInstruction (GoLoad (go.GoType.ArrayType 2 go.uint64)))) (Var "k")))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Let "v" (App (Val (GoInstruction (GoAlloc go.uint64))) (App (Val (GoInstruction (GoZeroVal go.uint64))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "__p" (App (App (Val (map.lookup2 (go.GoType.ArrayType 2 go.uint64) go.uint64)) (App (Val (GoInstruction (GoLoad (go.GoType.MapType (go.GoType.ArrayType 2 go.uint64) go.uint64)))) (Var "m"))) (Let "$v0" (Val #(W64 2))
+  (Let "$v1" (Val #(W64 1))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 2 go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1")))])))))
+  (Let "$ret0" (Fst (Var "__p"))
+  (Let "$ret1" (Snd (Var "__p"))
+  (Let "$r0" (Var "$ret0")
+  (Let "$r1" (Var "$ret1")
+  (Let "ok2" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (If (If (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok")) (App (Val (GoInstruction (GoOp GoEquals go.uint64))) (Pair (App (Val (GoInstruction (GoLoad go.uint64))) (Var "v")) (Val #(W64 3)))) (Val #false)) (App (Val (GoInstruction (GoUnOp GoNot go.bool))) (App (Val (GoInstruction (GoLoad go.bool))) (Var "ok2"))) (Val #false))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok2") (Var "$r1")))))))
+  (App (Val doExecute)
+  (Var "$r0")))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r1")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.uint64))) (Pair (Var "v") (Var "$r0"))))))))))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.ArrayType 2 go.uint64)))) (Pair (Var "k") (Var "$r0")))))))))
+  (App (Val doExecute)
+  (App (App (App (Val (map.insert (go.GoType.ArrayType 2 go.uint64))) (App (Val (GoInstruction (GoLoad (go.GoType.MapType (go.GoType.ArrayType 2 go.uint64) go.uint64)))) (Var "m"))) (Let "$v0" (Val #(W64 1))
+  (Let "$v1" (Val #(W64 2))
+  (App (Val (GoInstruction (CompositeLiteral (go.GoType.ArrayType 2 go.uint64)))) (LiteralValue [(KeyedElement none (ElementExpression go.uint64 (Var "$v0"))), (KeyedElement none (ElementExpression go.uint64 (Var "$v1")))]))))) (Var "$r0")))))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore (go.GoType.MapType (go.GoType.ArrayType 2 go.uint64) go.uint64)))) (Pair (Var "m") (Var "$r0"))))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: blank_fields.go:8:6 -/
@@ -12041,6 +12236,61 @@ attribute [instance] pairs.TypeAssumptions.underlying
   pairs.TypeAssumptions.method_set
   pairs.TypeAssumptions.ptr_method_set
 
+structure arrayInStruct [GooseExts] where
+  mk ::
+  arr' : (GoArray w64 2)
+  x' : w64
+
+noncomputable instance arrayInStruct.zero_val [GooseExts] : ZeroVal arrayInStruct :=
+  ⟨arrayInStruct.mk zeroValDef zeroValDef⟩
+
+@[reducible] noncomputable def arrayInStruct.fieldsUnsealed [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  [(go.field_decl.FieldDecl go!"arr" (go.GoType.ArrayType 2 go.uint64)),
+(go.field_decl.FieldDecl go!"x" go.uint64)]
+
+@[irreducible] noncomputable def arrayInStruct.fields [GooseExts] [GoGlobalContext] : List go.field_decl :=
+  arrayInStruct.fieldsUnsealed
+
+noncomputable instance equals_unfold_arrayInStruct [GooseExts] [GoGlobalContext] :
+    EqualsUnfold arrayInStruct.fields arrayInStruct.fieldsUnsealed :=
+  ⟨by unfold arrayInStruct.fields; rfl⟩
+
+@[reducible] noncomputable def arrayInStruct.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.StructType arrayInStruct.fields)
+
+class arrayInStruct.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  type_repr : go.TypeReprUnderlying arrayInStruct.underlying arrayInStruct
+  underlying : go.UnderlyingDirectedEq arrayInStruct.ty arrayInStruct.underlying
+  get_arr : ∀ (x : arrayInStruct), go.IsGoStepPureDetTagged under (StructFieldGet arrayInStruct.underlying go!"arr") #x (Val #(x.arr'))
+  set_arr : ∀ (x : arrayInStruct) (y : (GoArray w64 2)), go.IsGoStepPureDetTagged under (StructFieldSet arrayInStruct.underlying go!"arr") (PairV #x #y) (Val #(({ x with arr' := y } : arrayInStruct)))
+  get_x : ∀ (x : arrayInStruct), go.IsGoStepPureDetTagged under (StructFieldGet arrayInStruct.underlying go!"x") #x (Val #(x.x'))
+  set_x : ∀ (x : arrayInStruct) (y : w64), go.IsGoStepPureDetTagged under (StructFieldSet arrayInStruct.underlying go!"x") (PairV #x #y) (Val #(({ x with x' := y } : arrayInStruct)))
+  method_set : go.MethodSetIs arrayInStruct.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType arrayInStruct.ty) []
+
+attribute [instance] arrayInStruct.TypeAssumptions.type_repr
+  arrayInStruct.TypeAssumptions.underlying
+  arrayInStruct.TypeAssumptions.get_arr
+  arrayInStruct.TypeAssumptions.set_arr
+  arrayInStruct.TypeAssumptions.get_x
+  arrayInStruct.TypeAssumptions.set_x
+  arrayInStruct.TypeAssumptions.method_set
+  arrayInStruct.TypeAssumptions.ptr_method_set
+
+abbrev byteArray [GooseExts] : Type := (GoArray w8 2)
+
+@[reducible] noncomputable def byteArray.underlying [GooseExts] [GoGlobalContext] : go.GoType :=
+  (go.GoType.ArrayType 2 go.byte)
+
+class byteArray.TypeAssumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFunctions] : Prop where
+  underlying : go.UnderlyingDirectedEq byteArray.ty byteArray.underlying
+  method_set : go.MethodSetIs byteArray.ty []
+  ptr_method_set : go.MethodSetIs (go.GoType.PointerType byteArray.ty) []
+
+attribute [instance] byteArray.TypeAssumptions.underlying
+  byteArray.TypeAssumptions.method_set
+  byteArray.TypeAssumptions.ptr_method_set
+
 structure blankFieldStruct [GooseExts] where
   mk ::
   x' : w64
@@ -14009,6 +14259,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   localPair_instance : localPair.TypeAssumptions
   pair_instance : pair.TypeAssumptions
   pairs_instance : pairs.TypeAssumptions
+  arrayInStruct_instance : arrayInStruct.TypeAssumptions
+  byteArray_instance : byteArray.TypeAssumptions
   blankFieldStruct_instance : blankFieldStruct.TypeAssumptions
   minMaxDur_instance : minMaxDur.TypeAssumptions
   evalCounter_instance : evalCounter.TypeAssumptions
@@ -14098,6 +14350,9 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   sumArrayLit_unfold : FuncUnfold sumArrayLit [] sumArrayLit.impl
   testRangeArrayLit_unfold : FuncUnfold testRangeArrayLit [] testRangeArrayLit.impl
   testSliceArrayPointer_unfold : FuncUnfold testSliceArrayPointer [] testSliceArrayPointer.impl
+  testArrayEqual_unfold : FuncUnfold testArrayEqual [] testArrayEqual.impl
+  testArrayEqualNested_unfold : FuncUnfold testArrayEqualNested [] testArrayEqualNested.impl
+  testArrayMapKey_unfold : FuncUnfold testArrayMapKey [] testArrayMapKey.impl
   testBlankFieldEq_unfold : FuncUnfold testBlankFieldEq [] testBlankFieldEq.impl
   testBlankFieldMapKey_unfold : FuncUnfold testBlankFieldMapKey [] testBlankFieldMapKey.impl
   testBlankFieldIdentity_unfold : FuncUnfold testBlankFieldIdentity [] testBlankFieldIdentity.impl
@@ -14386,6 +14641,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.localPair_instance
   Assumptions.pair_instance
   Assumptions.pairs_instance
+  Assumptions.arrayInStruct_instance
+  Assumptions.byteArray_instance
   Assumptions.blankFieldStruct_instance
   Assumptions.minMaxDur_instance
   Assumptions.evalCounter_instance
@@ -14475,6 +14732,9 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.sumArrayLit_unfold
   Assumptions.testRangeArrayLit_unfold
   Assumptions.testSliceArrayPointer_unfold
+  Assumptions.testArrayEqual_unfold
+  Assumptions.testArrayEqualNested_unfold
+  Assumptions.testArrayMapKey_unfold
   Assumptions.testBlankFieldEq_unfold
   Assumptions.testBlankFieldMapKey_unfold
   Assumptions.testBlankFieldIdentity_unfold
