@@ -196,8 +196,9 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
 
   clear_map (key_type elem_type : go.GoType) :
     FuncUnfold go.clear [go.MapType key_type elem_type]
-    (λ: "m", Store "m" (Read
-               (FuncResolve go.make1 [go.MapType key_type elem_type] #() #())) : val)
+    (λ: "m",
+       if: "m" =⟨go.MapType key_type elem_type⟩ #map.nil then #()
+       else Store "m" (Read (FuncResolve go.make1 [go.MapType key_type elem_type] #() #())) : val)
   /-- Go's `delete` works on any type whose underlying type is a map, so (like
   `len_map`) this takes `[t ↓u go.MapType key_type elem_type]` rather than only a
   literal `go.MapType key_type elem_type`; otherwise `delete(m, k)` would be stuck
@@ -206,7 +207,8 @@ class MapSemantics [GoSemanticsFunctions] : Prop where
     FuncUnfold go.delete [t]
     (λ: "m" "k",
        InternalMapCheckKey key_type "k" ;;
-       Store "m" (InternalMapDelete key_type (Read "m", "k")) : val)
+       if: "m" =⟨go.MapType key_type elem_type⟩ #map.nil then #()
+       else Store "m" (InternalMapDelete key_type (Read "m", "k")) : val)
   make2_map (key_type elem_type : go.GoType) :
     FuncUnfold go.make2 [go.MapType key_type elem_type]
     (λ: "len",

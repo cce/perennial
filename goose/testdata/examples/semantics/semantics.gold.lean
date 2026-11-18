@@ -876,6 +876,12 @@ noncomputable def testIterateMap [GooseExts] [GoGlobalContext] : GoString :=
 noncomputable def testMapSize [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMapSize"
 
+noncomputable def testDeleteNilMap [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testDeleteNilMap"
+
+noncomputable def testClearNilMap [GooseExts] [GoGlobalContext] : GoString :=
+  go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testClearNilMap"
+
 noncomputable def testMethodSetValueReceiver [GooseExts] [GoGlobalContext] : GoString :=
   go!"github.com/mit-pdos/perennial/goose/testdata/examples/semantics.testMethodSetValueReceiver"
 
@@ -6312,6 +6318,45 @@ noncomputable def testMapSize.impl [GooseExts] [GoGlobalContext] : val :=
   (App (Val (GoInstruction (GoStore (go.GoType.MapType go.uint64 go.uint64)))) (Pair (Var "m") (Var "$r0")))))))))
   (App (Val doExecute)
   (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "ok") (Var "$r0"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: maps.go:51:6 -/
+noncomputable def testDeleteNilMap.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 0))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
+  (Let "$a1" (Val #(W64 3))
+  (App (App (App (Val (GoInstruction (FuncResolve go.delete [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Var "$a0")) (Var "$a1"))))))))
+  (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
+
+/-- go: maps.go:57:6 -/
+noncomputable def testClearNilMap.impl [GooseExts] [GoGlobalContext] : val :=
+  (LamV BAnon
+  (Let "$res0" (App (Val (GoInstruction (GoAlloc go.bool))) (App (Val (GoInstruction (GoZeroVal go.bool))) (Val #())))
+  (Seq (App (Val exceptionDo)
+  (Let "m" (App (Val (GoInstruction (GoAlloc (go.GoType.MapType go.uint64 go.uint64)))) (App (Val (GoInstruction (GoZeroVal (go.GoType.MapType go.uint64 go.uint64)))) (Val #())))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (Let "$r0" (App (Val (GoInstruction (GoOp GoEquals go.int))) (Pair (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
+  (App (App (Val (GoInstruction (FuncResolve go.len [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Var "$a0"))) (Val #(W64 0))))
+  (App (App (Val exceptionSeq) (Lam BAnon
+  (App (Val doReturn)
+  (Val #()))))
+  (App (Val doExecute)
+  (App (Val (GoInstruction (GoStore go.bool))) (Pair (Var "$res0") (Var "$r0"))))))))
+  (App (Val doExecute)
+  (Let "$a0" (App (Val (GoInstruction (GoLoad (go.GoType.MapType go.uint64 go.uint64)))) (Var "m"))
+  (App (App (Val (GoInstruction (FuncResolve go.clear [(go.GoType.MapType go.uint64 go.uint64)]))) (Val #())) (Var "$a0")))))))
   (App (Val (GoInstruction (GoLoad go.bool))) (Var "$res0")))))
 
 /-- go: method_sets.go:17:20 -/
@@ -14462,6 +14507,8 @@ class Assumptions [GooseExts] [GoGlobalContext] [GoLocalContext] [GoSemanticsFun
   IterateMapValues_unfold : FuncUnfold IterateMapValues [] IterateMapValues.impl
   testIterateMap_unfold : FuncUnfold testIterateMap [] testIterateMap.impl
   testMapSize_unfold : FuncUnfold testMapSize [] testMapSize.impl
+  testDeleteNilMap_unfold : FuncUnfold testDeleteNilMap [] testDeleteNilMap.impl
+  testClearNilMap_unfold : FuncUnfold testClearNilMap [] testClearNilMap.impl
   testMethodSetValueReceiver_unfold : FuncUnfold testMethodSetValueReceiver [] testMethodSetValueReceiver.impl
   testMethodSetPointerHasValueMethods_unfold : FuncUnfold testMethodSetPointerHasValueMethods [] testMethodSetPointerHasValueMethods.impl
   testMethodSetValueLacksPointerMethods_unfold : FuncUnfold testMethodSetValueLacksPointerMethods [] testMethodSetValueLacksPointerMethods.impl
@@ -14844,6 +14891,8 @@ attribute [instance] Assumptions.unit_instance
   Assumptions.IterateMapValues_unfold
   Assumptions.testIterateMap_unfold
   Assumptions.testMapSize_unfold
+  Assumptions.testDeleteNilMap_unfold
+  Assumptions.testClearNilMap_unfold
   Assumptions.testMethodSetValueReceiver_unfold
   Assumptions.testMethodSetPointerHasValueMethods_unfold
   Assumptions.testMethodSetValueLacksPointerMethods_unfold

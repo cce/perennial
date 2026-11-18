@@ -517,7 +517,10 @@ theorem wp_mapDelete_underlying {t key_type elem_type : go.GoType}
   rw [ownMap_unseal]
   iNamed Hm
   obtain ⟨rfl, Hnd, Hok, Hagree⟩ := Hrepr
+  ihave %Hnn := heapPointsto_non_null _ _ _ $$ Hown
   wp_apply (wp_go_eq_map_key (GF := GF) (key_type := key_type) (k := k) k Hsafe.key_ok)
+  rw [decide_eq_false (show ¬ l = map.nil from Hnn)]
+  wp_pures
   wp_apply (_internal_wp_untyped_read _ _ _ (map.mapV_not_panic _ _)) $$ Hown with Hown
   wp_pures
   have Hdel := wp_deleteExpr (GF := GF) (s := s) (E := E) key_type k #(zero_val V) [] ps Hok
@@ -633,11 +636,16 @@ theorem wp_map_clear (mref : Loc) (m : GMap K V) (key_type elem_type : go.GoType
       (App (Val #(functions go.clear [go.MapType key_type elem_type])) (Val #mref)) @ s; E
     {{ RET #(); mref ↦$ (∅ : GMap K V) }} := by
   wp_start as Hm
-  wp_apply (wp_map_make1 (K := K) (V := V) key_type elem_type) with %m' Hm'
   rw [ownMap_unseal]
   unfold ownMapDef
   iNamed Hm
   obtain ⟨rfl, -, -, -⟩ := Hrepr
+  ihave %Hnn := heapPointsto_non_null _ _ _ $$ Hown
+  rw [decide_eq_false (show ¬ mref = map.nil from Hnn)]
+  wp_pures
+  wp_apply (wp_map_make1 (K := K) (V := V) key_type elem_type) with %m' Hm'
+  rw [ownMap_unseal]
+  unfold ownMapDef
   icases Hm' with ⟨%mv', %ps', Hown', %Hrepr'⟩
   obtain ⟨rfl, Hnd', Hok', Hagree'⟩ := Hrepr'
   wp_apply (_internal_wp_untyped_read _ _ _ (map.mapV_not_panic _ _)) $$ Hown' with Hown'
@@ -1168,6 +1176,28 @@ instance wp_map_nil_for_range (body : GoFunc) (key_type elem_type : go.GoType) :
     iintro HΦ
     wp_call_lc Hlc
     iapply HΦ $$ Hlc
+
+/-- `delete` on a nil map does nothing; see `go.delete_map`. -/
+instance pure_wp_map_nil_delete {t key_type elem_type : go.GoType}
+    [t ↓u go.MapType key_type elem_type] (k : K) [Hsafe : SafeMapKey (GF := GF) key_type k] :
+    PureWp (G := hG.goose_globalGS) (L := hG.goose_localGS) True
+      (App (App (Val #(functions go.delete [t])) (Val #map.nil)) (Val #k)) (Val #()) :=
+  pure_wp_val True _ #() fun s E Φ _ => by
+    rw [func_unfold]
+    iintro HΦ
+    wp_call_lc Hlc
+    wp_apply (wp_go_eq_map_key (GF := GF) (key_type := key_type) (k := k) k Hsafe.key_ok)
+    iapply HΦ $$ Hlc
+
+/-- `clear` of a nil map does nothing; see `go.clear_map`. -/
+instance pure_wp_map_nil_clear (key_type elem_type : go.GoType) :
+    PureWp (G := hG.goose_globalGS) (L := hG.goose_localGS) True
+      (App (Val #(functions go.clear [go.MapType key_type elem_type])) (Val #map.nil)) (Val #()) :=
+  pure_wp_val True _ #() fun s E Φ _ => by
+    rw [func_unfold]
+    iintro HΦ
+    wp_auto_lc 1
+    iapply HΦ $$ Hlc1
 
 /-- `len` of a nil map is `0`; see `go.len_map`. The non-nil case needs the
 map's ownership (for the `Read`) and is not a `PureWp`; it is `wp_map_len`. -/

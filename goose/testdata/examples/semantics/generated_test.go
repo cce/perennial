@@ -435,6 +435,14 @@ func (suite *GoTestSuite) TestMapSize() {
 	suite.Equal(true, testMapSize())
 }
 
+func (suite *GoTestSuite) TestDeleteNilMap() {
+	suite.Equal(true, testDeleteNilMap())
+}
+
+func (suite *GoTestSuite) TestClearNilMap() {
+	suite.Equal(true, testClearNilMap())
+}
+
 func (suite *GoTestSuite) TestMethodSetValueReceiver() {
 	suite.Equal(true, testMethodSetValueReceiver())
 }

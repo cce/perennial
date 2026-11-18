@@ -47,3 +47,15 @@ func testMapSize() bool {
 
 	return ok
 }
+
+func testDeleteNilMap() bool {
+	var m map[uint64]uint64
+	delete(m, 3)
+	return len(m) == 0
+}
+
+func testClearNilMap() bool {
+	var m map[uint64]uint64
+	clear(m)
+	return len(m) == 0
+}

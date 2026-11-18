@@ -1197,3 +1197,26 @@ arrays of floats or interfaces.
 
 **Why.** The user approved the plan as proposed (2026-11-17): one rule completing the scheme of
 `go_eq_struct` (shape of Case 1), with the `decide` lemma for proofs.
+
+## Case 38 — ACCEPTED: `delete` and `clear` of a nil map do nothing (branch `nil-map-nop`)
+
+**Symptom.** Incomplete. `delete_map` and `clear_map` stored into the map cell unconditionally,
+so `delete(m, k)` and `clear(m)` of a nil map were stuck (a store to the null location), where
+Go does nothing.
+
+**Witness.** `var m map[uint64]uint64; delete(m, 3); clear(m); return len(m) == 0` is true in Go
+and stuck in the model. Go still checks the key first: `delete` of an unhashable key panics even
+on a nil map (`var m map[any]int; delete(m, []int{1})` panics).
+
+**Taken.** The shape of `len_map` and `lookup2`: a nil test before the `Read`/`Store`. In
+`delete_map` after the key check (`InternalMapCheckKey`), in `clear_map` first. Cost: 2 rule
+bodies changed, 0 new rules, 0 goose changes, 2 semantics tests (`testDeleteNilMap`,
+`testClearNilMap`, proved by `semantics_auto`). Proof side, not trusted: `wp_mapDelete_underlying`
+and `wp_map_clear` take the non-nil branch (`heapPointsto_non_null`), and `PureWp` instances
+`pure_wp_map_nil_delete` and `pure_wp_map_nil_clear`.
+
+**Not taken.** `clear` of a named map type (`clear_map` takes only a literal `go.MapType`, unlike
+`delete_map` and `len_map`): stuck for another reason, a separate item.
+
+**Why.** The user approved the plan as proposed (2026-11-18): the nil test `len_map` and `lookup2`
+already have, completing the scheme for the two mutating builtins.

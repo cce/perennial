@@ -23,12 +23,14 @@ public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examp
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testBreakSwitch
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testByteSliceToString
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCatchTwoDeep
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testClearNilMap
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareNilToNil
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testComparePointerToNil
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testComparePointerWrappedDefaultToNil
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testComparePointerWrappedToNil
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareSliceToNil
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefinedStrTypesEqual
+public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeleteNilMap
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDowncastInterface
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testEmptyBlock
 public import Perennial.Proof.github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testEmptyInterface
@@ -152,6 +154,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testB
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testCatchTwoDeep : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCatchTwoDeep.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCatchTwoDeep.wp_proof github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_catchTwoDeep
 
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testClearNilMap : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testClearNilMap.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testClearNilMap.wp_proof
+
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testCompareNilToNil : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareNilToNil.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testCompareNilToNil.wp_proof
 
@@ -169,6 +174,9 @@ theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testC
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDefinedStrTypesEqual : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefinedStrTypesEqual.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDefinedStrTypesEqual.wp_proof
+
+theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDeleteNilMap : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeleteNilMap.spec (GF := GF) (hG := hG) :=
+  github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDeleteNilMap.wp_proof
 
 theorem github_com.mit_pdos.perennial.goose.testdata.examples.semantics.wp_testDowncastInterface : github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDowncastInterface.spec (GF := GF) (hG := hG) :=
   github_com.mit_pdos.perennial.goose.testdata.examples.semantics.testDowncastInterface.wp_proof
