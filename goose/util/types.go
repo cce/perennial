@@ -13,7 +13,7 @@ func TypeGetDependencies(pkgPath string, ty types.Type) iter.Seq[string] {
 		q = append(q, ty)
 
 		for len(q) > 0 {
-			current := q[0]
+			current := types.Unalias(q[0])
 			q = q[1:]
 
 			if visited[current] {
